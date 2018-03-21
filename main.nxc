@@ -1,0 +1,53 @@
+#define WAIT_TIME 600
+#define FORWARD_TIME 2500
+sub turn_left() {
+                 OnRev(OUT_C, 100);
+                 OnFwd(OUT_A, 100);
+                 Wait(WAIT_TIME-5);
+                 OnFwd(OUT_AC, 0);
+}
+sub turn_right() {
+                 OnRev(OUT_A, 100);
+                 OnFwd(OUT_C, 100);
+                 Wait(WAIT_TIME+60);
+                 OnFwd(OUT_AC, 0);
+}
+
+
+task main() {
+/* Na zielonym cofa sie i skreca w lewo;
+   Na czerwonym wylacza sie */
+
+   SetSensorUltrasonic(IN_3);
+   
+   ColorSensorReadType csr;
+   csr.Port = S3;
+   int flag = 0;
+   
+   while (true){
+        ClearScreen();
+        Wait(500);
+        int sensor = SensorUS(IN_3)    ;
+        NumOut(0, 0, sensor);
+
+        if(sensor < 30){
+            turn_left();
+            OnFwd(OUT_AC, 100);
+            Wait(FORWARD_TIME);
+            turn_right();
+            flag = flag + 1;
+            
+        } else if (flag) {
+            OnFwd(OUT_AC, 100);
+            Wait(2500);
+            turn_right();
+            OnFwd(OUT_AC, 100);
+            Wait(FORWARD_TIME*flag);
+            turn_left();
+            flag = 0;
+        }
+        else {
+            OnFwd(OUT_AC, 100);
+        }
+  }
+}
