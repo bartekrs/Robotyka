@@ -1,8 +1,57 @@
-sub funckja() {
-                 OnRev(OUT_C, 50);
-                 OnFwd(OUT_A, 50);
-                 Wait(700);
+#define WAIT_TIME 600
+#define FORWARD_TIME 2500
+sub turn_left() {
+                 OnRev(OUT_C, 100);
+                 OnFwd(OUT_A, 100);
+                 Wait(WAIT_TIME-5);
+                 OnFwd(OUT_AC, 0);
 }
+sub turn_right() {
+
+                 OnRev(OUT_A, 100);
+                 OnFwd(OUT_C, 100);
+                 Wait(WAIT_TIME+60);
+                 OnFwd(OUT_AC, 0);
+}
+sub bypassLeft() {
+    turn_left();
+    RotateMotor(OUT_B, 50 , -90);       // oskar to pipa
+    OnFwd(OUT_AC, 100);
+    while (true) {
+        ClearScreen();
+        OnFwd(OUT_AC, 0);
+        Wait(500);
+        int sensor = SensorUS(IN_3);
+        NumOut(0, 0, sensor);
+        if(sensor > 40) {
+                break;
+        }
+    }
+    turn_right();
+    OnFwd(OUT_AC, 100);
+    Wait(200);
+    while (true) {
+        ClearScreen();
+        OnFwd(OUT_AC, 0);
+        Wait(500);
+        int sensor = SensorUS(IN_3);
+        NumOut(0, 0, sensor);
+        if(sensor > 30) {
+                break;
+        }
+    }
+    turn_right();
+    RotateMotor(OUT_B, 50 , 90);       // oskar to pipa
+    OnFwd(OUT_AC, 100);
+    Wait(2000);
+    turn_left();
+
+    
+    
+
+}
+
+
 task main() {
 /* Na zielonym cofa sie i skreca w lewo;
    Na czerwonym wylacza sie */
@@ -11,28 +60,18 @@ task main() {
    
    ColorSensorReadType csr;
    csr.Port = S3;
-   int iloscKrokow = 0;
+   int flag = 0;
+   
    while (true){
         ClearScreen();
         Wait(500);
-        int sensor = SensorUS(IN_3)    ;
+        int sensor = SensorUS(IN_3);
         NumOut(0, 0, sensor);
 
-        if(sensor < 30){
-              OnFwd(OUT_C, 50);
-              OnRev(OUT_A, 50);
-              iloscKrokow++;
-        }
-        else if (iloscKrokow != 0) {
-             OnFwd(OUT_AC, 100);
-             Wait(2000);
-             iloscKrokow = iloscKrokow * 2;
-             while(iloscKrokow) {
-                 funckja();
-                 iloscKrokow--;
-             }
-        }
-        else {
+        if(sensor < 30) {
+            bypassLeft();
+            
+        }  else {
             OnFwd(OUT_AC, 100);
         }
   }
