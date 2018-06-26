@@ -1,0 +1,116 @@
+/*
+1 - czarny
+6 - bialy
+5- czerwony
+*/
+
+string tablica[100];
+int counter = 0;
+
+void goForward() {
+        int left_sensor = Sensor(S1);
+        int middle_sensor = Sensor(S2);
+        int right_sensor = Sensor(S3);
+
+        if( middle_sensor != 6) {
+        if(left_sensor == 1 && middle_sensor == 1 && right_sensor == 1) {
+            OnFwd(OUT_AC, 0);
+        } else if(middle_sensor == 1) {
+            OnFwd(OUT_AC, 30);
+        } else if(left_sensor == 1) {
+            while(middle_sensor != 1) {
+                OnFwd(OUT_A, 10);
+                OnFwd(OUT_C, 30);
+                middle_sensor = Sensor(S2);
+            }
+        } else if(right_sensor == 1) {
+            while(middle_sensor != 1) {
+                OnFwd(OUT_A, 30);
+                OnFwd(OUT_C, 10);
+                middle_sensor = Sensor(S2);
+            }
+        } else {
+            OnFwd(OUT_AC, 30);
+        }
+        }
+}
+
+void turnLeft() {
+            bool isOutOfTape = false;
+            while(1) {
+                int middle_sensor = Sensor(S2);
+                if( !isOutOfTape && middle_sensor != 1 ) isOutOfTape = true;
+                OnRev(OUT_A, 30);
+                OnFwd(OUT_C, 30);
+                if(middle_sensor == 1 && isOutOfTape) {
+                    OnFwd(OUT_AC, 0);
+                    break;
+                }  // end if
+            }      // end while
+}
+
+void turnRight() {
+            bool isOutOfTape = false;
+            while(1) {
+                int middle_sensor = Sensor(S2);
+                if( !isOutOfTape && middle_sensor != 1 ) isOutOfTape = true;
+                OnFwd(OUT_A, 30);
+                OnRev(OUT_C, 30);
+                if(middle_sensor == 1 && isOutOfTape) {
+                    OnFwd(OUT_AC, 0);
+                    break;
+                }  // end if
+            }      // end while
+}
+
+task main() {
+    bool flag = false;
+
+    int left_sensor = 0;
+    int middle_sensor = 0;
+    int right_sensor = 0;
+
+    SetSensorColorFull(S1);
+    SetSensorColorFull(S2);
+    SetSensorColorFull(S3);
+
+        string wybor = "Null";
+        bool przod = false;
+
+    while (1) {
+        left_sensor = Sensor(S1);
+        middle_sensor = Sensor(S2);
+        right_sensor = Sensor(S3);
+    
+        if(middle_sensor == 6) {
+            OnFwd(OUT_AC, 0);
+            Wait(200);
+            if(left_sensor == 1) wybor = "lewo";
+            else if(right_sensor == 1) wybor = "prawo";
+            // do przodu
+            OnFwd(OUT_AC, 30);
+            Wait(900);
+            if(middle_sensor == 1) przod = true;
+            OnFwd(OUT_AC, 0);
+        }
+        TextOut(1,1, wybor);
+        if(wybor == "lewo") {
+            //long prevCount = MotorRotationCount(OUT_A);
+            turnLeft();
+            wybor = "Null";
+            przod = false;
+            //long count = MotorRotationCount(OUT_A) - prevCount;
+        } else if(przod) {
+            goForward();
+            wybor = "Null";
+            przod = false;
+        } else if(wybor == "prawo") {
+            turnRight();
+            wybor = "Null";
+            przod = false;
+            }
+        else {
+            goForward();
+        }
+    }
+}
