@@ -68,6 +68,66 @@ void temp() {
     }
 }
 
+void test() {
+int i = 1;
+int a = 0;
+while(a<500) {
+    if(i == counter - 2) i = 1;
+        if(tablica[i] != "0" && tablica[i+1] == "0") {
+            tablica[i+1] = tablica[i];
+            tablica[i] = "0";
+        }
+        i++;
+        a++;
+    }
+}
+
+void optimize() {
+     for(int i = 1; i < counter-1; i++) {
+         if(tablica[i] != "0") {
+             if(tablica[i] == "zawrot") {
+                 if(tablica[i-1] == "lewo" && tablica[i+1] == "prawo") {
+                      tablica[i-1] = "0";
+                      tablica[i] = "0";
+                      tablica[i+1] = "zawrot";
+                      i = 1;
+                 } else if(tablica[i-1] == "lewo" && tablica[i+1] == "prosto") {
+                      tablica[i-1] = "0";
+                      tablica[i] = "0";
+                      tablica[i+1] = "prawo";
+                      i = 1;
+                 } else if(tablica[i-1] == "prawo" && tablica[i+1] == "lewo") {
+                      tablica[i-1] = "0";
+                      tablica[i] = "0";
+                      tablica[i+1] = "zawrot";
+                      i = 1;
+                 } else if(tablica[i-1] == "prosto" && tablica[i+1] == "lewo") {
+                      tablica[i-1] = "0";
+                      tablica[i] = "0";
+                      tablica[i+1] = "prawo";
+                      i = 1;
+                 } else if(tablica[i-1] == "prosto" && tablica[i+1] == "lewo") {
+                      tablica[i-1] = "0";
+                      tablica[i] = "0";
+                      tablica[i+1] = "prawo";
+                      i = 1;
+                 } else if(tablica[i-1] == "prosto" && tablica[i+1] == "prosto") {
+                      tablica[i-1] = "0";
+                      tablica[i] = "0";
+                      tablica[i+1] = "zawrot";
+                      i = 1;
+                 } else if(tablica[i-1] == "lewo" && tablica[i+1] == "lewo") {
+                      tablica[i-1] = "0";
+                      tablica[i] = "0";
+                      tablica[i+1] = "prosto";
+                      i = 1;
+                 } //else if(i == counter - 1) break;
+             test();
+             }
+         }
+     }
+}
+
 task main() {
     int left_sensor = 0;
     int middle_sensor = 0;
@@ -86,7 +146,10 @@ task main() {
 
         if(left_sensor == 4 && middle_sensor == 4 && right_sensor == 4) {
             OnFwd(OUT_AC, 0);
+            optimize();
             temp();
+            Wait(10000);
+            break;
         } else if(middle_sensor == 1 && (left_sensor == 1 || right_sensor == 1)) {
             OnFwd(OUT_AC, 0);
             Wait(200);
@@ -124,10 +187,10 @@ task main() {
             counter++;
         } else {
             goForward();
-            if(tablica[counter-1] != "prosto") {
-                tablica[counter] = "prosto";
-                counter++
-            }
+            //if(tablica[counter-1] != "prosto") {
+            //    tablica[counter] = "prosto";
+            //    counter++;
+            //}
         }
     }
 }
