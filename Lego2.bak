@@ -2,38 +2,11 @@
 1 - czarny
 6 - bialy
 5- czerwony
+4 - zolty
 */
 
 string tablica[100];
 int counter = 0;
-
-void goForward() {
-        int left_sensor = Sensor(S1);
-        int middle_sensor = Sensor(S2);
-        int right_sensor = Sensor(S3);
-
-        if( middle_sensor != 6) {
-        if(left_sensor == 1 && middle_sensor == 1 && right_sensor == 1) {
-            OnFwd(OUT_AC, 0);
-        } else if(middle_sensor == 1) {
-            OnFwd(OUT_AC, 30);
-        } else if(left_sensor == 1) {
-            while(middle_sensor != 1) {
-                OnFwd(OUT_A, 10);
-                OnFwd(OUT_C, 30);
-                middle_sensor = Sensor(S2);
-            }
-        } else if(right_sensor == 1) {
-            while(middle_sensor != 1) {
-                OnFwd(OUT_A, 30);
-                OnFwd(OUT_C, 10);
-                middle_sensor = Sensor(S2);
-            }
-        } else {
-            OnFwd(OUT_AC, 30);
-        }
-        }
-}
 
 void turnLeft() {
             bool isOutOfTape = false;
@@ -63,9 +36,39 @@ void turnRight() {
             }      // end while
 }
 
-task main() {
-    bool flag = false;
+void goForward() {
+        int left_sensor = Sensor(S1);
+        int middle_sensor = Sensor(S2);
+        int right_sensor = Sensor(S3);
 
+        if(left_sensor == 1) {
+            while(middle_sensor != 1) {
+                OnFwd(OUT_A, 10);
+                OnFwd(OUT_C, 30);
+                middle_sensor = Sensor(S2);
+            }
+        } else if(right_sensor == 1) {
+            while(middle_sensor != 1) {
+                OnFwd(OUT_A, 30);
+                OnFwd(OUT_C, 10);
+                middle_sensor = Sensor(S2);
+            }
+        } else {
+            OnFwd(OUT_AC, 30);
+        }
+}
+
+void temp() {
+    int a = 0;
+    int b = 65;
+    for(int i = 0; i < counter; i++) {
+        if(i == 6) { a = 50; b=b+60; }
+        b = b-10;
+        TextOut(a,b,StrCat(NumToStr(i),tablica[i]));
+    }
+}
+
+task main() {
     int left_sensor = 0;
     int middle_sensor = 0;
     int right_sensor = 0;
@@ -74,43 +77,57 @@ task main() {
     SetSensorColorFull(S2);
     SetSensorColorFull(S3);
 
-        string wybor = "Null";
-        bool przod = false;
+    string wybor = "Null";
 
     while (1) {
         left_sensor = Sensor(S1);
         middle_sensor = Sensor(S2);
         right_sensor = Sensor(S3);
-    
-        if(middle_sensor == 6) {
+
+        if(left_sensor == 4 && middle_sensor == 4 && right_sensor == 4) {
+            OnFwd(OUT_AC, 0);
+            temp();
+        } else if(middle_sensor == 1 && (left_sensor == 1 || right_sensor == 1)) {
             OnFwd(OUT_AC, 0);
             Wait(200);
             if(left_sensor == 1) wybor = "lewo";
             else if(right_sensor == 1) wybor = "prawo";
-            // do przodu
+            // do przodu kawalek
             OnFwd(OUT_AC, 30);
-            Wait(900);
-            if(middle_sensor == 1) przod = true;
+            Wait(1000);
             OnFwd(OUT_AC, 0);
-        }
-        TextOut(1,1, wybor);
-        if(wybor == "lewo") {
-            //long prevCount = MotorRotationCount(OUT_A);
+        } else if(wybor == "lewo") {
             turnLeft();
             wybor = "Null";
-            przod = false;
-            //long count = MotorRotationCount(OUT_A) - prevCount;
-        } else if(przod) {
-            goForward();
-            wybor = "Null";
-            przod = false;
+            tablica[counter] = "lewo";
+            counter++;
         } else if(wybor == "prawo") {
-            turnRight();
-            wybor = "Null";
-            przod = false;
+            left_sensor = Sensor(S1);
+            middle_sensor = Sensor(S2);
+            right_sensor = Sensor(S3);
+            Wait(40);
+            if(left_sensor == 1 || middle_sensor == 1 || right_sensor == 1) {
+                goForward();
+                tablica[counter] = "prosto";
+                counter++;
+            } else {
+                turnRight();
+                tablica[counter] = "prawo";
+                counter++;
             }
-        else {
+            wybor = "Null";
+        } else if(left_sensor == 6 && middle_sensor == 6 && right_sensor == 6) {
+            OnFwd(OUT_AC, 30);
+            Wait(100);
+            turnLeft();
+            tablica[counter] = "zawrot";
+            counter++;
+        } else {
             goForward();
+            if(tablica[counter-1] != "prosto") {
+                tablica[counter] = "prosto";
+                counter++
+            }
         }
     }
 }
